@@ -1,6 +1,6 @@
 # Dope Wars for Android
 
-A neon New York remake of the classic trading game. Thirty days, a loan shark, six neighborhoods, cops, muggers and a trench coat that never has enough room.
+A neon MiffCo remake of the classic trading game. Thirty days, a loan shark, six towns (Lewistown, Milroy, Reedsville, Burnham, Yeagertown and Belleville), cops, muggers and a trench coat that never has enough room.
 
 The game itself is plain HTML, CSS and JavaScript in `www/`. [Capacitor](https://capacitorjs.com) wraps it as an Android app, and GitHub Actions builds the APK for you.
 

@@ -3,16 +3,17 @@
   'use strict';
 
   var THEMES = {
-    bronx:     { name: 'BRONX',        sky: ['#14082a', '#4a1c5c', '#ff5e7e'], neon: '#ff2e93', rain: false },
-    ghetto:    { name: 'GHETTO',       sky: ['#06101c', '#12304a', '#2b6f8c'], neon: '#27e1ff', rain: true },
-    park:      { name: 'CENTRAL PARK', sky: ['#04100f', '#0c3a2f', '#2a8f6a'], neon: '#7dff6a', rain: false },
-    manhattan: { name: 'MANHATTAN',    sky: ['#0a0a1f', '#2b1b6b', '#ff8a3d'], neon: '#ffd23f', rain: false },
-    coney:     { name: 'CONEY ISLAND', sky: ['#16061f', '#5a1a6b', '#ff4fa3'], neon: '#ff9f1c', rain: false },
-    brooklyn:  { name: 'BROOKLYN',     sky: ['#061822', '#164a63', '#f4a259'], neon: '#4cc9f0', rain: true }
+    lewistown:  { name: 'LEWISTOWN',  sky: ['#14082a', '#4a1c5c', '#ff5e7e'], neon: '#ff2e93', rain: false, hm: 0.42 },
+    milroy:     { name: 'MILROY',     sky: ['#06101c', '#12304a', '#2b6f8c'], neon: '#27e1ff', rain: true,  hills: 'ridge' },
+    reedsville: { name: 'REEDSVILLE', sky: ['#061822', '#164a63', '#f4a259'], neon: '#4cc9f0', rain: false, hm: 0.16 },
+    burnham:    { name: 'BURNHAM',    sky: ['#1a0a06', '#5a2210', '#ff7a3d'], neon: '#ff9f1c', rain: false, hm: 0.34 },
+    yeagertown: { name: 'YEAGERTOWN', sky: ['#0a0a1f', '#2b1b6b', '#ff8a3d'], neon: '#ffd23f', rain: false, hm: 0.26 },
+    belleville: { name: 'BELLEVILLE', sky: ['#04100f', '#0c3a2f', '#2a8f6a'], neon: '#7dff6a', rain: false, hills: 'rolling' }
   };
 
+
   var cv, ctx, W = 0, H = 0, dpr = 1;
-  var theme = THEMES.bronx, id = 'bronx';
+  var theme = THEMES.lewistown, id = 'lewistown';
   var t = 0, last = 0, running = false;
   var far, mid, near, wins = [], stars = [], rain = [], parts = [];
   var flash = { kind: '', until: 0 }, shakeUntil = 0, hurtUntil = 0;
@@ -41,10 +42,11 @@
 
   function build() {
     var r = seeded(hashId(id));
-    var tall = id === 'manhattan';
-    far = layer(r, H * 0.18, H * (tall ? 0.6 : 0.4), 22, 46, 4);
-    mid = layer(r, H * 0.2, H * (tall ? 0.72 : 0.5), 26, 56, 6);
-    near = layer(r, H * 0.12, H * 0.3, 40, 90, 24);
+    var hm = theme.hm || 0.4;
+    far = layer(r, H * 0.12, H * hm * 0.85, 22, 46, 4);
+    mid = layer(r, H * 0.14, H * hm, 26, 56, 6);
+    near = layer(r, H * 0.08, H * 0.22, 40, 90, 24);
+    if (theme.hills) { far = []; mid = []; near = []; }
     wins = [];
     mid.forEach(function (b) {
       for (var wx = b.x + 5; wx < b.x + b.w - 6; wx += 9) {
@@ -117,56 +119,129 @@
     for (var i = 0; i < arr.length; i++) ctx.fillRect(arr[i].x, base - arr[i].h, arr[i].w, arr[i].h);
   }
 
+  function ridge(base, amp, freq, phase, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(0, base);
+    for (var x = 0; x <= W; x += 6) {
+      var y = base - amp * (0.55 + 0.3 * Math.sin(x * freq + phase) + 0.15 * Math.sin(x * freq * 2.3 + phase * 1.7));
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, base); ctx.closePath(); ctx.fill();
+  }
+
+  function drawHills() {
+    var base = H * 0.78;
+    if (theme.hills === 'ridge') {
+      ridge(base, H * 0.62, 0.011, 1.2, '#0a1626');
+      ridge(base, H * 0.4, 0.017, 4.1, '#07101c');
+      ridge(base, H * 0.2, 0.024, 2.2, '#040a12');
+    } else {
+      ridge(base, H * 0.26, 0.008, 0.6, '#0a2a22');
+      ridge(base, H * 0.18, 0.013, 3.3, '#06201a');
+      ridge(base, H * 0.1, 0.02, 5.1, '#031510');
+      // plowed field rows
+      ctx.strokeStyle = 'rgba(125,255,106,0.12)'; ctx.lineWidth = 1;
+      for (var i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(0, base - i * 4); ctx.lineTo(W, base - i * 4 - i * 1.5); ctx.stroke(); }
+    }
+  }
+
+  function glowDot(x, y, r, color) {
+    var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, color); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+
   function drawSpecial() {
     var base = H * 0.78;
-    if (id === 'coney') {
-      var cx = W * 0.7, cy = base - 62, R = 50;
-      ctx.strokeStyle = theme.neon; ctx.lineWidth = 2; ctx.shadowColor = theme.neon; ctx.shadowBlur = 10;
-      ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.stroke();
-      ctx.beginPath(); ctx.arc(cx, cy, R * 0.55, 0, 6.2832); ctx.stroke();
-      var a0 = t * 0.35;
-      for (var i = 0; i < 8; i++) {
-        var a = a0 + i * 0.7854, x = cx + Math.cos(a) * R, y = cy + Math.sin(a) * R;
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
-        ctx.fillStyle = i % 2 ? '#ffe14d' : '#ff4fa3';
-        ctx.fillRect(x - 3, y - 2, 6, 6);
-      }
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - 24, base); ctx.moveTo(cx, cy); ctx.lineTo(cx + 24, base); ctx.stroke();
-      ctx.shadowBlur = 0;
-    } else if (id === 'brooklyn') {
-      var tx1 = W * 0.2, tx2 = W * 0.8, top = base - H * 0.55;
-      ctx.fillStyle = '#071018';
-      [tx1, tx2].forEach(function (x) {
-        ctx.fillRect(x - 12, top, 7, base - top); ctx.fillRect(x + 5, top, 7, base - top);
-        ctx.beginPath(); ctx.moveTo(x - 12, top + 18); ctx.quadraticCurveTo(x, top - 8, x + 12, top + 18); ctx.lineTo(x + 12, top + 28); ctx.quadraticCurveTo(x, top + 4, x - 12, top + 28); ctx.fill();
-      });
-      ctx.strokeStyle = theme.neon; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.8; ctx.shadowColor = theme.neon; ctx.shadowBlur = 6;
-      ctx.beginPath(); ctx.moveTo(-10, base - 18); ctx.quadraticCurveTo(tx1 * 0.5, base - 12, tx1, top + 6); ctx.quadraticCurveTo((tx1 + tx2) / 2, base - 8, tx2, top + 6); ctx.quadraticCurveTo(tx2 + (W - tx2) * 0.5, base - 12, W + 10, base - 18); ctx.stroke();
-      var y0 = top + 6, yc = base - 8;
-      for (var k = 1; k < 16; k++) {
-        var f = k / 16, px = tx1 + (tx2 - tx1) * f;
-        var cableY = y0 * ((1 - f) * (1 - f) + f * f) + yc * 2 * f * (1 - f);
-        ctx.beginPath(); ctx.moveTo(px, cableY); ctx.lineTo(px, base - 14); ctx.stroke();
-      }
-      ctx.fillStyle = '#071018'; ctx.fillRect(0, base - 16, W, 4);
-      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-    } else if (id === 'manhattan') {
+    if (id === 'lewistown') {
+      // courthouse clock tower
+      var sx = W * 0.58, top = base - H * 0.56;
       ctx.fillStyle = '#0a0814';
-      var sx = W * 0.58; ctx.fillRect(sx, base - H * 0.76, 16, H * 0.76);
-      ctx.beginPath(); ctx.moveTo(sx, base - H * 0.76); ctx.lineTo(sx + 8, base - H * 0.94); ctx.lineTo(sx + 16, base - H * 0.76); ctx.fill();
-      var on = Math.sin(t * 3) > 0;
-      ctx.fillStyle = on ? '#ff3b3b' : '#5a1010'; ctx.beginPath(); ctx.arc(sx + 8, base - H * 0.94, 2.2, 0, 6.2832); ctx.fill();
-    } else if (id === 'bronx') {
-      var wx = W * 0.62, wy = base - mid[Math.min(mid.length - 1, Math.floor(mid.length * 0.6))].h;
-      ctx.fillStyle = '#0a0612'; ctx.fillRect(wx, wy - 14, 18, 10);
-      ctx.beginPath(); ctx.moveTo(wx, wy - 14); ctx.lineTo(wx + 9, wy - 22); ctx.lineTo(wx + 18, wy - 14); ctx.fill();
-      ctx.fillRect(wx + 3, wy - 4, 2, 4); ctx.fillRect(wx + 13, wy - 4, 2, 4);
-    } else if (id === 'park') {
-      ctx.fillStyle = '#031a14';
-      for (var i2 = 0; i2 < 9; i2++) {
-        var tx = (i2 + 0.5) * (W / 9), tr = 18 + (i2 * 37 % 15);
-        ctx.beginPath(); ctx.arc(tx, base - 20, tr, 0, 6.2832); ctx.arc(tx - tr * 0.6, base - 10, tr * 0.7, 0, 6.2832); ctx.arc(tx + tr * 0.6, base - 8, tr * 0.7, 0, 6.2832); ctx.fill();
+      ctx.fillRect(sx, top, 20, base - top);
+      ctx.beginPath(); ctx.moveTo(sx - 3, top); ctx.lineTo(sx + 10, top - 22); ctx.lineTo(sx + 23, top); ctx.fill();
+      ctx.fillRect(sx + 9, top - 34, 2, 12);
+      var cx = sx + 10, cy = top + 20;
+      glowDot(cx, cy, 22, 'rgba(255,230,160,0.45)');
+      ctx.fillStyle = '#ffe9a8'; ctx.beginPath(); ctx.arc(cx, cy, 7, 0, 6.2832); ctx.fill();
+      ctx.strokeStyle = '#0a0814'; ctx.lineWidth = 1.4;
+      var ma = t * 0.4;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ma) * 5.5, cy + Math.sin(ma) * 5.5);
+      ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ma / 12 + 1) * 3.5, cy + Math.sin(ma / 12 + 1) * 3.5); ctx.stroke();
+    } else if (id === 'milroy') {
+      // lit cabin on the ridge
+      var kx = W * 0.66, ky = base - H * 0.2;
+      ctx.fillStyle = '#02060c';
+      ctx.fillRect(kx, ky, 24, 14);
+      ctx.beginPath(); ctx.moveTo(kx - 3, ky); ctx.lineTo(kx + 12, ky - 10); ctx.lineTo(kx + 27, ky); ctx.fill();
+      glowDot(kx + 8, ky + 7, 18, 'rgba(255,190,90,0.5)');
+      ctx.fillStyle = '#ffd37a'; ctx.fillRect(kx + 5, ky + 4, 6, 6);
+    } else if (id === 'reedsville') {
+      // truss bridge
+      var x1 = W * 0.12, x2 = W * 0.88, deck = base - 12, topc = deck - 34;
+      ctx.strokeStyle = theme.neon; ctx.lineWidth = 1.6; ctx.globalAlpha = 0.85; ctx.shadowColor = theme.neon; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(x1, deck); ctx.lineTo(x1 + 18, topc); ctx.lineTo(x2 - 18, topc); ctx.lineTo(x2, deck); ctx.stroke();
+      var step = (x2 - x1 - 36) / 12;
+      ctx.lineWidth = 1;
+      for (var k = 0; k <= 12; k++) {
+        var px = x1 + 18 + k * step;
+        ctx.beginPath(); ctx.moveTo(px, topc); ctx.lineTo(px, deck); ctx.stroke();
+        if (k < 12) { ctx.beginPath(); ctx.moveTo(px, deck); ctx.lineTo(px + step, topc); ctx.stroke(); }
       }
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      ctx.fillStyle = '#05080f'; ctx.fillRect(0, deck, W, 5);
+      ctx.fillRect(W * 0.3, deck, 6, base - deck + 2); ctx.fillRect(W * 0.7, deck, 6, base - deck + 2);
+    } else if (id === 'burnham') {
+      // steel works: stacks, glow and smoke
+      glowDot(W * 0.7, base - 6, 90, 'rgba(255,120,40,0.35)');
+      var stacks = [[0.56, 0.62, 15], [0.66, 0.5, 13], [0.76, 0.58, 15]];
+      stacks.forEach(function (st, si) {
+        var x = W * st[0], h = H * st[1], w = st[2];
+        ctx.fillStyle = '#0a0604';
+        ctx.beginPath(); ctx.moveTo(x, base); ctx.lineTo(x + 2, base - h); ctx.lineTo(x + w - 2, base - h); ctx.lineTo(x + w, base); ctx.fill();
+        ctx.fillStyle = theme.neon; ctx.globalAlpha = 0.85; ctx.fillRect(x + 2, base - h, w - 4, 2); ctx.globalAlpha = 1;
+        for (var p = 0; p < 6; p++) {
+          var prog = ((t * 0.22 + p / 6 + si * 0.17) % 1);
+          var py = base - h - prog * 70, px2 = x + w / 2 + Math.sin(prog * 5 + si) * 10 + prog * 18;
+          ctx.globalAlpha = 0.34 * (1 - prog);
+          ctx.fillStyle = '#9a8a86';
+          ctx.beginPath(); ctx.arc(px2, py, 4 + prog * 12, 0, 6.2832); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      });
+      ctx.fillStyle = '#0a0604'; ctx.fillRect(W * 0.52, base - H * 0.16, W * 0.34, H * 0.16);
+      var fl = 0.55 + 0.45 * Math.sin(t * 6);
+      ctx.fillStyle = 'rgba(255,150,60,' + fl + ')';
+      for (var q = 0; q < 6; q++) ctx.fillRect(W * 0.54 + q * (W * 0.05), base - H * 0.1, 9, 6);
+    } else if (id === 'yeagertown') {
+      // water tower and power poles
+      var wx = W * 0.62, legsTop = base - H * 0.34;
+      ctx.fillStyle = '#080614';
+      ctx.fillRect(wx, legsTop, 3, H * 0.34); ctx.fillRect(wx + 25, legsTop, 3, H * 0.34);
+      ctx.beginPath(); ctx.moveTo(wx, legsTop + 20); ctx.lineTo(wx + 28, base); ctx.moveTo(wx + 28, legsTop + 20); ctx.lineTo(wx, base); ctx.strokeStyle = '#080614'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillRect(wx - 6, legsTop - 30, 40, 30);
+      ctx.beginPath(); ctx.moveTo(wx - 6, legsTop - 30); ctx.lineTo(wx + 14, legsTop - 42); ctx.lineTo(wx + 34, legsTop - 30); ctx.fill();
+      ctx.fillStyle = theme.neon; ctx.globalAlpha = 0.8; ctx.fillRect(wx - 6, legsTop - 18, 40, 2); ctx.globalAlpha = 1;
+      var pox = [W * 0.08, W * 0.4, W * 0.9];
+      ctx.strokeStyle = '#05040a'; ctx.lineWidth = 2;
+      pox.forEach(function (x, i) {
+        ctx.beginPath(); ctx.moveTo(x, base); ctx.lineTo(x, base - H * 0.42); ctx.moveTo(x - 9, base - H * 0.38); ctx.lineTo(x + 9, base - H * 0.38); ctx.stroke();
+        if (i < pox.length - 1) {
+          ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + 9, base - H * 0.38); ctx.quadraticCurveTo((x + pox[i + 1]) / 2, base - H * 0.3, pox[i + 1] - 9, base - H * 0.38); ctx.stroke(); ctx.lineWidth = 2;
+        }
+      });
+      var bl = Math.sin(t * 3) > 0;
+      ctx.fillStyle = bl ? '#ff3b3b' : '#5a1010'; ctx.beginPath(); ctx.arc(wx + 14, legsTop - 46, 2, 0, 6.2832); ctx.fill();
+    } else if (id === 'belleville') {
+      // barn and silo
+      var bx = W * 0.6, bw = 62, bh = 30;
+      ctx.fillStyle = '#021410';
+      ctx.fillRect(bx, base - bh, bw, bh);
+      ctx.beginPath(); ctx.moveTo(bx - 4, base - bh); ctx.lineTo(bx + 12, base - bh - 16); ctx.lineTo(bx + bw - 12, base - bh - 16); ctx.lineTo(bx + bw + 4, base - bh); ctx.fill();
+      ctx.fillRect(bx + bw + 4, base - 54, 15, 54);
+      ctx.beginPath(); ctx.arc(bx + bw + 11.5, base - 54, 7.5, Math.PI, 0); ctx.fill();
+      glowDot(bx + 18, base - 12, 20, 'rgba(255,190,90,0.4)');
+      ctx.fillStyle = '#ffd37a'; ctx.fillRect(bx + 14, base - 16, 8, 10);
+      ctx.strokeStyle = '#021410'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bx + 14, base - 16); ctx.lineTo(bx + 22, base - 6); ctx.moveTo(bx + 22, base - 16); ctx.lineTo(bx + 14, base - 6); ctx.stroke();
     }
   }
 
@@ -285,6 +360,7 @@
     if (now < shakeUntil && !reduce) ctx.translate((Math.random() - 0.5) * 7, (Math.random() - 0.5) * 5);
     drawSky();
     var base = H * 0.78;
+    if (theme.hills) drawHills();
     drawLayer(far, 'rgba(10,6,24,0.55)', base);
     drawLayer(mid, '#0b0814', base);
     drawWindows();

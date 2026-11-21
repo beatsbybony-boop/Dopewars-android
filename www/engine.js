@@ -14,12 +14,12 @@
   ];
 
   var PLACES = [
-    { id: 'bronx', name: 'Bronx', bank: true },
-    { id: 'ghetto', name: 'Ghetto' },
-    { id: 'park', name: 'Central Park' },
-    { id: 'manhattan', name: 'Manhattan' },
-    { id: 'coney', name: 'Coney Island' },
-    { id: 'brooklyn', name: 'Brooklyn' }
+    { id: 'lewistown', name: 'Lewistown', bank: true },
+    { id: 'milroy', name: 'Milroy' },
+    { id: 'reedsville', name: 'Reedsville' },
+    { id: 'burnham', name: 'Burnham' },
+    { id: 'yeagertown', name: 'Yeagertown' },
+    { id: 'belleville', name: 'Belleville' }
   ];
 
   var GUN_SPACE = 5;
@@ -51,7 +51,7 @@
       day: 1, maxDays: 30,
       cash: 2000, bank: 0, debt: 5500,
       health: 100, guns: 0, coat: 100,
-      inv: {}, loc: 'bronx', prices: {},
+      inv: {}, loc: 'lewistown', prices: {},
       kills: 0, over: false, dead: false, score: 0,
       enc: null
     };
@@ -124,28 +124,28 @@
   function atBank(s) { return !!placeById(s.loc).bank; }
 
   function repay(s, amt) {
-    if (!atBank(s)) return { ok: false, msg: 'The loan shark only works the Bronx.' };
+    if (!atBank(s)) return { ok: false, msg: 'The loan shark only works out of Lewistown.' };
     amt = Math.floor(Math.min(amt, s.cash, s.debt));
     if (amt <= 0) return { ok: false, msg: 'Nothing to pay.' };
     s.cash -= amt; s.debt -= amt;
     return { ok: true, amt: amt };
   }
   function borrow(s, amt) {
-    if (!atBank(s)) return { ok: false, msg: 'The loan shark only works the Bronx.' };
+    if (!atBank(s)) return { ok: false, msg: 'The loan shark only works out of Lewistown.' };
     amt = Math.floor(Math.min(amt, MAX_DEBT - s.debt));
     if (amt <= 0) return { ok: false, msg: 'The shark says you owe enough already.' };
     s.cash += amt; s.debt += amt;
     return { ok: true, amt: amt };
   }
   function deposit(s, amt) {
-    if (!atBank(s)) return { ok: false, msg: 'The bank is in the Bronx.' };
+    if (!atBank(s)) return { ok: false, msg: 'The bank is in Lewistown.' };
     amt = Math.floor(Math.min(amt, s.cash));
     if (amt <= 0) return { ok: false, msg: 'No cash to deposit.' };
     s.cash -= amt; s.bank += amt;
     return { ok: true, amt: amt };
   }
   function withdraw(s, amt) {
-    if (!atBank(s)) return { ok: false, msg: 'The bank is in the Bronx.' };
+    if (!atBank(s)) return { ok: false, msg: 'The bank is in Lewistown.' };
     amt = Math.floor(Math.min(amt, s.bank));
     if (amt <= 0) return { ok: false, msg: 'Nothing in the bank.' };
     s.bank -= amt; s.cash += amt;
@@ -221,7 +221,7 @@
       var n = Math.min(randInt(s, 3, 12), freeSpace(s));
       s.inv[cand.id].qty += n;
       ev.push({ type: 'info', tone: 'good', title: 'Lucky find',
-        text: 'You found ' + n + ' ' + cand.name + ' stuffed in a subway seat. Finders keepers.' });
+        text: 'You found ' + n + ' ' + cand.name + ' stuffed under a bench at the bus stop. Finders keepers.' });
     }
 
     if (r() < 0.1 && s.cash > 200) {
@@ -350,7 +350,7 @@
     [10000, 'Street Hustler'],
     [50000, 'Block Boss'],
     [150000, 'Kingpin'],
-    [500000, 'Legend of the Five Boroughs']
+    [500000, 'Legend of MiffCo']
   ];
   function rank(score) {
     var name = RANKS[0][1];

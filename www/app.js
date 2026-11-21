@@ -4,7 +4,7 @@
   var E = window.Engine;
   var $ = function (id) { return document.getElementById(id); };
   var S = null;
-  var SAVE_KEY = 'dopewars-save-v1', HIGH_KEY = 'dopewars-high-v1', MUTE_KEY = 'dopewars-mute-v1';
+  var SAVE_KEY = 'dopewars-save-v2', HIGH_KEY = 'dopewars-high-v1', MUTE_KEY = 'dopewars-mute-v1';
 
   /* ---------- helpers ---------- */
   function money(n) { n = Math.round(n); return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-US'); }
@@ -384,7 +384,7 @@
     $('intro').hidden = true;
     render(); save();
     openModal({
-      title: 'Welcome to the Bronx',
+      title: 'Welcome to Lewistown',
       body: ['You owe Big Al $5,500 and the interest runs 10% a day. You have $2,000, a trench coat and 30 days.', 'Buy where it is cheap, sell where it is dear, and pay the shark before he comes looking.'],
       buttons: [{ label: 'Hit the street', cls: 'primary', fn: closeModal }]
     });
@@ -405,9 +405,9 @@
     openModal({
       title: 'How to play',
       body: [
-        'Each day you pick a neighborhood. Prices change every trip, and some dealers are not around.',
+        'Each day you pick a town. Prices change every trip, and some dealers are not around.',
         'Tap BUY when a price is low (green bar) and SELL when it is high (red bar). Your coat only holds so much.',
-        'The loan shark in the Bronx charges 10% interest a day. The Bronx bank keeps cash safe from muggers.',
+        'The loan shark in Lewistown charges 10% interest a day. The Lewistown bank keeps cash safe from muggers.',
         'Cops can show up. Run, fight if you carry a gun, or give up and lose half your stash.',
         'After day 30 everything you carry is sold at local prices. Score is cash plus bank minus debt.'
       ],
