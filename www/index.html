@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#08060f">
+  <title>Dope Wars</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="hud">
+      <div class="hud-top">
+        <div class="day"><span class="lbl">DAY</span> <b id="day">1</b><span class="of">/30</span></div>
+        <div class="coat"><span id="coat">0/100</span> <span class="lbl">COAT</span><span id="guns" class="guns" hidden></span></div>
+        <button id="mute" class="icon-btn" aria-label="Toggle sound">SFX</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="lbl">CASH</span><b id="cash" class="green">$0</b></div>
+        <div class="stat"><span class="lbl">BANK</span><b id="bank">$0</b></div>
+        <div class="stat"><span class="lbl">DEBT</span><b id="debt" class="red">$0</b></div>
+      </div>
+      <div class="health" title="Health"><span class="lbl">HP</span><div class="bar"><i id="hp"></i></div><b id="hpn">100</b></div>
+    </header>
+
+    <div id="scene-wrap"><canvas id="scene" aria-label="Night city scene"></canvas><div class="wipe"></div></div>
+
+    <button id="shark" class="shark" hidden>
+      <span>LOAN SHARK &amp; BANK</span><small>Pay debt, borrow, stash cash</small>
+    </button>
+
+    <main id="market" aria-label="Street prices"></main>
+
+    <nav id="travel" aria-label="Travel"></nav>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="modal" class="modal" hidden>
+    <div class="card" role="dialog" aria-modal="true">
+      <h2 id="m-title"></h2>
+      <div id="m-body"></div>
+      <div id="m-btns" class="btns"></div>
+    </div>
+  </div>
+
+  <div id="intro" class="intro">
+    <div class="intro-inner">
+      <p class="kicker">NEW YORK CITY, 1987</p>
+      <h1>DOPE<br>WARS</h1>
+      <p class="tag">30 days. $5,500 in debt to a loan shark. Six neighborhoods. Buy low, sell high, and stay out of cuffs.</p>
+      <div class="btns">
+        <button id="b-new" class="btn primary">NEW GAME</button>
+        <button id="b-cont" class="btn" hidden>CONTINUE</button>
+        <button id="b-how" class="btn ghost">HOW TO PLAY</button>
+      </div>
+      <p id="high" class="high"></p>
+    </div>
+  </div>
+
+  <script src="engine.js"></script>
+  <script src="scene.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
