@@ -119,12 +119,12 @@
       var own = el('div', 'own');
       if (slot.qty > 0) {
         var avg = slot.cost / slot.qty;
-        own.appendChild(document.createTextNode('Carrying '));
+        own.appendChild(document.createTextNode('Have '));
         own.appendChild(el('b', null, String(slot.qty)));
         own.appendChild(document.createTextNode(' @ ' + money(avg) + ' '));
         if (p) own.appendChild(el('span', p >= avg ? 'up' : 'dn', p >= avg ? '▲' : '▼'));
       } else {
-        own.textContent = 'None on you';
+        own.textContent = 'None';
       }
       info.appendChild(own);
       row.appendChild(info);
